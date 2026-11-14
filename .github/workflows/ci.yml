@@ -1,1 +1,43 @@
+name: CI
 
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install libraries
+        run: pip install -r requirement.txt
+
+      - name: Run EDA and train the model
+        run: python main.py
+
+      - name: Start the API and test the endpoints
+        run: |
+          python app.py &
+          sleep 8
+          curl --fail http://127.0.0.1:5000/health
+          curl --fail http://127.0.0.1:5000/model-info
+          curl --fail http://127.0.0.1:5000/eda
+          curl --fail -X POST http://127.0.0.1:5000/predict \
+            -H "Content-Type: application/json" \
+            -d '{"Age":65,"BMI":35,"Fasting_Blood_Sugar":190,"HbA1c":10,"Blood_Pressure_Systolic":150,"Family_History_Diabetes":1}'
+          curl --fail http://127.0.0.1:5000/history
+
+      - name: Save the EDA pictures
+        uses: actions/upload-artifact@v4
+        with:
+          name: eda-pictures
+          path: eda_outputs/
