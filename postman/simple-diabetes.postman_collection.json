@@ -1,0 +1,367 @@
+{
+  "info": {
+    "name": "Simple Diabetes Risk API",
+    "description": "Start the API first (python app.py), then run the requests top to bottom.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:5000"
+    }
+  ],
+  "item": [
+    {
+      "name": "All tests",
+      "item": [
+        {
+          "name": "1. Home",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": []
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Says running\", function () { const j = pm.response.json(); pm.expect(j.message).to.include(\"running\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Status ok\", function () { const j = pm.response.json(); pm.expect(j.status).to.eql(\"ok\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Model info (accuracy)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/model-info",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "model-info"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Accuracy above 75%\", function () { const j = pm.response.json(); pm.expect(j.accuracy_percent).to.be.above(75); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3b. EDA summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/eda",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eda"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Has 50000 rows and 3 classes\", function () { const j = pm.response.json(); pm.expect(j.rows).to.eql(50000); pm.expect(Object.keys(j.class_counts).length).to.eql(3); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Predict - HIGH risk patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/predict",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "predict"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Age\": 65,\n  \"BMI\": 35,\n  \"Fasting_Blood_Sugar\": 190,\n  \"HbA1c\": 10,\n  \"Blood_Pressure_Systolic\": 150,\n  \"Family_History_Diabetes\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Risk is High\", function () { const j = pm.response.json(); pm.expect(j.risk).to.eql(\"High\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Predict - LOW risk patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/predict",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "predict"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Age\": 25,\n  \"BMI\": 22,\n  \"Fasting_Blood_Sugar\": 80,\n  \"HbA1c\": 4.8,\n  \"Blood_Pressure_Systolic\": 110,\n  \"Family_History_Diabetes\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Risk is Low\", function () { const j = pm.response.json(); pm.expect(j.risk).to.eql(\"Low\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. Predict - MODERATE risk patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/predict",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "predict"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Age\": 45,\n  \"BMI\": 28,\n  \"Fasting_Blood_Sugar\": 110,\n  \"HbA1c\": 6,\n  \"Blood_Pressure_Systolic\": 130,\n  \"Family_History_Diabetes\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Risk is Moderate\", function () { const j = pm.response.json(); pm.expect(j.risk).to.eql(\"Moderate\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7. Predict - missing fields (error)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/predict",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "predict"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Age\": 45\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Lists missing fields\", function () { const j = pm.response.json(); pm.expect(j.missing).to.include(\"BMI\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8. Predict - text instead of number (error)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/predict",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "predict"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Age\": \"old\",\n  \"BMI\": 28,\n  \"Fasting_Blood_Sugar\": 110,\n  \"HbA1c\": 6,\n  \"Blood_Pressure_Systolic\": 130,\n  \"Family_History_Diabetes\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "9. History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "history"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Has saved predictions\", function () { const j = pm.response.json(); pm.expect(j.length).to.be.above(0); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

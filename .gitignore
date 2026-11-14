@@ -1,0 +1,7 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+diabetes_model.pkl
+eda_outputs/
+.pytest_cache/

@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: diabetes-risk-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirement.txt && python main.py
+    startCommand: gunicorn app:app
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
